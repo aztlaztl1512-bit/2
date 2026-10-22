@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المعلم التفاعلي - الكفاية الإملائية | ثانوية الأمير عبد المجيد</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tone.js & Canvas Confetti -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --bg-base: #FAF6F0;
+            --bg-card: #FFFFFF;
+            --bg-card-subtle: #F5EFE6;
+            --primary: #800020; /* عنابي ملكي */
+            --primary-hover: #5c0017;
+            --secondary: #D4AF37; /* ذهبي */
+            --secondary-light: #FFF8DC;
+            --accent-red: #C0392B;
+            --text-dark: #2C2C2C;
+            --text-muted: #666666;
+            --border-color: #E8DFD8;
+            --success: #27AE60;
+            --shadow: 0 10px 30px rgba(128, 0, 32, 0.08);
+            --radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Tajawal', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: radial-gradient(rgba(212, 175, 55, 0.15) 1px, transparent 0);
+            background-size: 28px 28px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, #4A0012 100%);
+            color: #FFFFFF;
+            padding: 2rem 1rem 3rem 1rem;
+            text-align: center;
+            border-bottom-left-radius: 32px;
+            border-bottom-right-radius: 32px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            position: relative;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--secondary), #FFF, var(--secondary));
+        }
+
+        .badge-teacher {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(212, 175, 55, 0.2);
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 900;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        main {
+            max-width: 1000px;
+            width: 95%;
+            margin: -1.5rem auto 3rem auto;
+            flex: 1;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            background: var(--bg-card);
+            padding: 8px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 14px 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 1.05rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: #FFFFFF;
+            box-shadow: 0 4px 12px rgba(128, 0, 32, 0.25);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Cheatsheet Styling */
+        .rule-section {
+            margin-bottom: 2rem;
+            border-right: 4px solid var(--primary);
+            padding-right: 15px;
+        }
+
+        .rule-title {
+            color: var(--primary);
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .rule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 1rem;
+        }
+
+        .rule-card {
+            background: var(--bg-card-subtle);
+            padding: 1.2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .rule-card h4 {
+            color: var(--accent-red);
+            font-size: 1.1rem;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .rule-card p {
+            font-size: 0.95rem;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .example-box {
+            background: #FFF;
+            border-right: 3px solid var(--secondary);
+            padding: 6px 10px;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            color: #444;
+        }
+
+        /* Quiz Styling */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            background: var(--bg-card-subtle);
+            padding: 1rem;
+            border-radius: 12px;
+        }
+
+        .quiz-progress {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .quiz-score {
+            font-weight: 800;
+            color: var(--success);
+            font-size: 1.1rem;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background: var(--bg-card-subtle);
+            border: 2px solid var(--border-color);
+            padding: 1rem 1.2rem;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            text-align: right;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary);
+            background: #FFF;
+            transform: translateX(-4px);
+        }
+
+        .option-btn.correct {
+            background: #E8F8F0 !important;
+            border-color: var(--success) !important;
+            color: var(--success) !important;
+        }
+
+        .option-btn.incorrect {
+            background: #FADBD8 !important;
+            border-color: var(--accent-red) !important;
+            color: var(--accent-red) !important;
+        }
+
+        .explanation-box {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 12px;
+            background: #FFF8DC;
+            border: 1px solid var(--secondary);
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .btn-next {
+            background: var(--primary);
+            color: #FFF;
+            border: none;
+            padding: 12px 28px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            display: none;
+            float: left;
+            transition: background 0.2s ease;
+        }
+
+        .btn-next:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Score Summary */
+        .results-box {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+
+        .score-circle {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #FFF;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem auto;
+            font-size: 2.2rem;
+            font-weight: 900;
+            box-shadow: 0 10px 20px rgba(128, 0, 32, 0.3);
+        }
+
+        .score-circle span {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-card);
+            margin-top: auto;
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.6rem; }
+            .nav-tabs { flex-direction: column; }
+            .question-text { font-size: 1.15rem; }
+            .card { padding: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="badge-teacher">
+            <i class="fa-solid fa-graduation-cap"></i>
+            الأستاذ عبدالعزيز الفيفي - ثانوية الأمير عبد المجيد
+        </div>
+        <h1>الكفاية الإملائية: أعراف الكتابة وعلامات الترقيم</h1>
+        <p class="subtitle">تطبيق مراجعة شروحات وتدريبات مادة الكفايات اللغوية</p>
+    </header>
+
+    <main>
+        <!-- Tab Navigation -->
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('cheatsheet')">
+                <i class="fa-solid fa-book-bookmark"></i>
+                ملخص القواعد التفصيلي
+            </button>
+            <button class="tab-btn" onclick="switchTab('quiz')">
+                <i class="fa-solid fa-pen-to-square"></i>
+                الاختبار التفاعلي (40 سؤالاً)
+            </button>
+        </div>
+
+        <!-- Cheatsheet Content -->
+        <div id="cheatsheet" class="tab-content active">
+            <div class="card">
+                <!-- Section 1: أعراف الكتابة -->
+                <div class="rule-section">
+                    <div class="rule-title">
+                        <i class="fa-solid fa-list-check"></i>
+                        أولاً: أعراف الكتابة السبعة
+                    </div>
+                    <p style="margin-bottom: 1rem; color: var(--text-muted);">عادات تعارف عليها الكُتّاب لتنظيم المادة المكتوبة ومساعدة القارئ على الفهم والتركيز[cite: 1].</p>
+                    <div class="rule-grid">
+                        <div class="rule-card">
+                            <h4>1. العناوين (الرئيسة والجانبية)</h4>
+                            <p>توضع العناوين الرئيسة بوسط الأعلى والتفصيلات بعناوين جانبية يمين الصفحة[cite: 1].</p>
+                            <div class="example-box">مثال: العنوان الرئيسي لدرس، والعناوين الجانبية للأقسام.[cite: 1]</div>
+                        </div>
+                        <div class="rule-card">
+                            <h4>2. إبراز الكلمات ذات الأهمية</h4>
+                            <p>تمييز الكلمات الهامة بلون مختلف، أو خط تحتها، أو تغيير نوع الخط وحجمه لتنبيه القارئ[cite: 1].</p>
+                        </div>
+                        <div class="rule-card">
+                            <h4>3. التعداد</h4>
+                            <p>تنظيم التفصيلات بأساليب التعداد (لفظي، رقمي، ألفبائي، أبجدي، أو نقطي)[cite: 1].</p>
+                        </div>
+                        <div class="rule-card">
+                            <h4>4. الكتابة في فقرات</h4>
+                            <p>تبدأ كل فقرة بفراغ بمقدار كلمة وتنتهي بنقطة، وتعبر كل فقرة عن فكرة رئيسة واحدة[cite: 2].</p>
+                        </div>
+                        <div class="rule-card">
+                            <h4>5. استخدام الجداول والرسوم</h4>
+                            <p>تلخيص التفصيلات الكثيرة وإعطاء القارئ تصوّراً شاملاً للموضوع[cite: 2].</p>
+                        </div>
+                        <div class="rule-card">
+                            <h4>6. تحديد الأهداف</h4>
+                            <p>افتتاح الفصل بالنتائج والأهداف المأمولة لتركيز ذهن القارئ ومساعدته[cite: 2].</p>
+                        </div>
+                        <div class="rule-card">
+                            <h4>7. التلخيص</h4>
+                            <p>اختتام الفصول بملخص يوجز أهم ما ورد فيها لإعطاء فرصة مراجعة مركزة[cite: 2].</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: علامات الترقيم -->
+                <div class="rule-section" style="border-color: var(--secondary);">
+                    <div class="rule-title" style="color: #9E7B1A;">
+                        <i class="fa-solid fa-icons"></i>
+                        ثانياً: مواضع علامات الترقيم
+                    </div>
+                    <div class="rule-grid">
+                        <div class="rule-card">
+                            <h4>النقطة ( . )</h4>
+                            <p>توضع في نهاية الجملة التي اكتمل معناها تماماً[cite: 3].</p>
+                            <div class="example-box">العلمُ صيدٌ والكتابةُ قيدُه.[cite: 3]</div>
+                        </div>
+                        <div class="rule-card">
+                            <h4>النقطتان الرأسيتان ( : )</h4>
+                            <p>بعد القول، بين الشيء وأقسامه، وبعد كلمة (مثل)[cite: 3].</p>
+                            <div class="example-box">قال عليٌّ: «العلم نهرٌ»[cite: 3]</div>
+                        </div>
+                        <div class="rule-card">
+                            <h4>الفاصلة ( ، )</h4>
+                            <p>بين المفردات/الجمل المتعاطفة، أقسام الشيء، وبعد المنادى وقبل (مثل)[cite: 3].</p>
+                            <div class="example-box">يا عبدَ الله، اسمع النصيحة.[cite: 3]</div>
+                        </div>
+                        <div class="rule-card">
+                            <h4>الفاصلة المنقوطة ( ؛ )</h4>
+                            <p>بين جملتين بينهما علاقة سببية (إحداهما سبب للأخرى)[cite: 4].</p>
+                            <div class="example-box">ذاكرَ الطالبُ بجدٍّ؛ فنجحَ بتفوق.[cite: 4]</div>
+                        </div>
+                        <div class="rule-card">
+                            <h4>الشرطة ( - )</h4>
+                            <p>بين طرفي الجملة الطويلة، في الحوارات بديل الأسماء، وبعد الأعداد[cite: 4].</p>
+                            <div class="example-box">1- أولاً | - متى عدت؟ - أمس.[cite: 4]</div>
+                        </div>
+                        <div class="rule-card">
+                            <h4>الشرطتان ( - - )</h4>
+                            <p>يوضع بينهما الكلام المعترض في أصل الجملة[cite: 5].</p>
+                            <div class="example-box">كان أبوك - رحمه الله - رجلاً فاضلاً.[cite: 5]</div>
+                        </div>
+                        <div class="rule-card">
+                            <h4>القوسان ( ( ) )</h4>
+                            <p>لتفسير جملة/كلمة غامضة، أو حصر الأرقام في وسط الكلام[cite: 5].</p>
+                            <div class="example-box">الصبر (عصارة نبات مر) دواء.[cite: 5]</div>
+                        </div>
+                        <div class="rule-card">
+                            <h4>علامتا التنصيص ( « » )</h4>
+                            <p>يحصر بينهما الكلام المنقول بنصه تماماً[cite: 5].</p>
+                            <div class="example-box">قال الرسول: «إنما الأعمال بالنيات».[cite: 5]</div>
+                        </div>
+                        <div class="rule-card">
+                            <h4>علامة الاستفهام ( ؟ )</h4>
+                            <p>توضع بعد الجمل الاستفهامية بجميع أنواعها[cite: 5].</p>
+                        </div>
+                        <div class="rule-card">
+                            <h4>علامة التأثر/التعجب ( ! )</h4>
+                            <p>نهاية الجمل الانفعالية (تعجب، دعا، تمني، مدح، ذم)[cite: 6].</p>
+                        </div>
+                        <div class="rule-card">
+                            <h4>علامة الحذف ( ... )</h4>
+                            <p>مكان الكلام المحذوف للدلالة على بقية لم تُذكر[cite: 6].</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Content -->
+        <div id="quiz" class="tab-content">
+            <div class="card">
+                <div class="quiz-header">
+                    <span class="quiz-progress" id="quiz-progress">السؤال 1 من 40</span>
+                    <span class="quiz-score" id="quiz-score">النقاط: 0</span>
+                </div>
+
+                <div class="question-text" id="question-text">جاري تحميل السؤال...</div>
+
+                <div class="options-grid" id="options-container"></div>
+
+                <div class="explanation-box" id="explanation-box"></div>
+
+                <button class="btn-next" id="btn-next" onclick="nextQuestion()">السؤال التالي <i class="fa-solid fa-arrow-left"></i></button>
+
+                <div id="results-area" class="results-box" style="display: none;">
+                    <div class="score-circle" id="final-score-circle">
+                        0/40
+                        <span>درجتك النهائية</span>
+                    </div>
+                    <h2 id="final-message" style="color: var(--primary); margin-bottom: 1rem;">أداء ممتاز!</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">تم إكمال مراجعة الكفاية الإملائية بنجاح.</p>
+                    <button class="btn-next" style="display: inline-block; float: none;" onclick="restartQuiz()">إعادة الاختبار <i class="fa-solid fa-rotate-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        تطبيق المعلم التفاعلي &copy; 2026 - إعداد الأستاذ عبدالعزيز الفيفي | ثانوية الأمير عبد المجيد
+    </footer>
+
+    <script>
+        // Raw Question Bank (40 Questions covering Unit 2)
+        const rawQuestions = [
+            { q: "ما الغرض الرئيس من التزام الكتاب بـ 'أعراف الكتابة'؟", a: "تنظيم المادة ومساعدة القارئ على الفهم والتركيز", options: ["تنظيم المادة ومساعدة القارئ على الفهم والتركيز", "زيادة عدد صفحات الكتاب", "تحسين الخط العربي فقط", "تعبئة الفراغات في الصفحة"], e: "أعراف الكتابة هي عادات تعارف عليها الكتاب لتنظيم المادة المكتوبة ومساعدة القارئ على المتابعة[cite: 1]." },
+            { q: "أين يوضع العنوان الرئيس للموضوع عادةً؟", a: "في وسط السطر الأول من أعلى الصفحة", options: ["في وسط السطر الأول من أعلى الصفحة", "في هامش الصفحة الأيمن", "في نهاية الفكرة الأخيرة", "في السطر الأخير أسفل الصفحة"], e: "العنوان الرئيس يوضع في وسط السطر الأول أعلى الصفحة[cite: 1]." },
+            { q: "تمييز كلمة بلون مختلف أو خط تحتها يُعد من عرف:", a: "إبراز الكلمات أو الجمل ذات الأهمية", options: ["إبراز الكلمات أو الجمل ذات الأهمية", "التلخيص", "الكتابة في فقرات", "تحديد الأهداف"], e: "إبراز الكلمات يساعد القارئ على التركيز ولفت نظره للأهمية[cite: 1]." },
+            { q: "التعداد باستخدام (أولاً - ثانياً - ثالثاً) يسمى تعداداً:", a: "لفظياً", options: ["لفظياً", "رقمياً", "أبجدياً", "نقطياً"], e: "التعداد اللفظي يكون باستخدام الألفاظ: أولاً، ثانياً...[cite: 1]" },
+            { q: "تبدأ الفقرة بفراغ في أول السطر بمقدار كلمة وتنتهي بـ:", a: "نقطة", options: ["نقطة", "فاصلة", "علامة تعجب", "شرطتين"], e: "تبدأ الفقرة بفراغ كلمة وتنتهي بنقطة، وتعبر عن فكرة رئيسة واحدة[cite: 2]." },
+            { q: "أي مما يلي يساعد على تلخيص الجزئيات الكثيرة وتصور الموضوع بكل تفاصيله؟", a: "الجداول والرسوم التوضيحية", options: ["الجداول والرسوم التوضيحية", "علامات التنصيص", "الأقواس الدائرية", "الشرطة الحوارية"], e: "تساعد الجداول والرسوم على تلخيص الجزئيات الكثيرة[cite: 2]." },
+            { q: "ما فائدة إفتتاح الفصول بتحديد الأهداف في الكتب التعليمية؟", a: "إعطاء القارئ صورة عن محتوى الفصل ومساعدته على التركيز", options: ["إعطاء القارئ صورة عن محتوى الفصل ومساعدته على التركيز", "اختبار القارئ قبل القراءة", "إطالة مقدمة الكتاب", "حساب عدد الخلاصات"], e: "تحديد الأهداف يعطي القارئ صورة عن المحتوى ويركز انتباهه[cite: 2]." },
+            { q: "اختتام الفصول بملخصات يمنح القارئ فرصة لـ:", a: "المراجعة المركزة ومراجعة الفهم", options: ["المراجعة المركزة ومراجعة الفهم", "تخطي قراءة باقي الفصل", "نسخ الكتاب بخط اليد", "حفظ الأرقام فقط"], e: "الملخص الاختتامي يساعد على الفهم وتوفير مراجعة مركزة[cite: 2]." },
+            { q: "توضع النقطة ( . ) في:", a: "نهاية الجملة التي اكتمل معناها", options: ["نهاية الجملة التي اكتمل معناها", "بين الجمل المتعاطفة", "بعد لفظ المنادى", "بين العدد والمعدود"], e: "النقطة توضع في نهاية الكلام الذي اكتمل معنى جملته[cite: 3]." },
+            { q: "توضع النقطتان الرأسيتان ( : ) في جميع المواضع التالية ما عدا:", a: "بين جملتين بينهما علاقة سببية", options: ["بين جملتين بينهما علاقة سببية", "بعد القول وشبهه", "بين الشيء وأقسامه", "بعد كلمة مثل"], e: "بين الجملتين السببيتين توضع الفاصلة المنقوطة وليس النقطتان[cite: 3, 4]." },
+            { q: "ما علامة الترقيم المناسبة في العبارة: (يا عبدَ الله ... اسمع النصيحة)؟", a: "فاصلة ( ، )", options: ["فاصلة ( ، )", "نقطة ( . )", "علامة تنصيص", "شرطة ( - )"], e: "توضع الفاصلة بعد لفظ المنادى[cite: 3]." },
+            { q: "الجملتان اللتان تربطهما علاقة سببية توضع بينهما علامة:", a: "الفاصلة المنقوطة ( ؛ )", options: ["الفاصلة المنقوطة ( ؛ )", "الفاصلة العادية ( ، )", "الشرطة ( - )", "النقطتان ( : )"], e: "تقع الفاصلة المنقوطة بين جملتين بينهما علاقة سببية[cite: 4]." },
+            { q: "علامة الترقيم التي توضع بدلاً من تكرار أسماء المتحاورين في الجمل الحوارية هي:", a: "الشرطة ( - )", options: ["الشرطة ( - )", "النقطتان ( : )", "علامة التنصيص", "القوسان"], e: "تقع الشرطة في أول الجمل الحوارية بدلاً من تكرار الأسماء[cite: 4]." },
+            { q: "يوضع الكلام المعترض بين طرفي الجملة المترابطين بين:", a: "شرطتين ( - - )", options: ["شرطتين ( - - )", "قوسين ( ( ) )", "علامتي تنصيص", "فاصلتين منقوطتين"], e: "يوضع الكلام المعترض بين شرطتين مثل: كان أبوك - رحمه الله - فاضلاً[cite: 5]." },
+            { q: "لتوضيح كلمة غامضة أو حصر الأرقام في وسط الكلام نستخدم:", a: "القوسين ( ( ) )", options: ["القوسين ( ( ) )", "علامة التنصيص", "علامة الحذف", "الشرطة"], e: "تحصر الأرقام أ والكلمات الشارحة للغموض بين القوسين[cite: 5]." },
+            { q: "تستخدم علامة التنصيص « » لـ:", a: "حصر الكلام المنقول بنصه حرفياً", options: ["حصر الكلام المنقول بنصه حرفياً", "حصر الجملة الدعائية والمعترضة", "كتابة السؤال والاستفهام", "توضيح معنى كلمة صعبة"], e: "يحصر بين علامتي التنصيص الكلام المنقول بنصه[cite: 5]." },
+            { q: "ما علامة الترقيم المناسبة في نهاية جملة (ما أجملَ الربيع)؟", a: "علامة التأثر/التعجب ( ! )", options: ["علامة التأثر/التعجب ( ! )", "علامة الاستفهام ( ؟ )", "النقطة ( . )", "الفاصلة المنقوطة ( ؛ )"], e: "توضع علامة التأثر في نهاية جمل التعجب والانفعال[cite: 6]." },
+            { q: "الدلالة الرئيسية لعلامة الحذف ( ... ) هي:", a: "أن هناك بقية للكلام المحذوف لا داعي لذكره", options: ["أن هناك بقية للكلام المحذوف لا داعي لذكره", "أن الجملة خاطئة ويجب مراجعتها", "أن الكلام منقول بنصه من كتاب آخر", "أن الجملة استفهامية إنكارية"], e: "توضع ثلاث نقط مكان الكلام المحذوف للدلالة على البقية[cite: 6]." },
+            { q: "التعداد الأبجدي يكون بالترتيب التالي:", a: "أ - ب - ج - د", options: ["أ - ب - ج - د", "أ - ب - ت - ث", "1 - 2 - 3 - 4", "أولاً - ثانياً - ثالثاً"], e: "التعداد الأبجدي هو (أ، ب، ج، د)، بينما الألفبائي (أ، ب، ت، ث)[cite: 1]." },
+            { q: "استخرج العرف الكتابي المُستخدم عند وضع ' - ' بدلاً من النقاط الغليظة في القائمة:", a: "التعداد", options: ["التعداد", "إبراز الكلمات", "التلخيص", "تحديد الأهداف"], e: "تستعمل الشرطة للتعداد بدلاً من الأرقام أو النقط[cite: 4]." },
+            { q: "صوّب الخطأ في: (قال المعلم؛ اجتهدوا في دروسكم)", a: "وضع نقطتين رأسيتين بدلاً من الفاصلة المنقوطة", options: ["وضع نقطتين رأسيتين بدلاً من الفاصلة المنقوطة", "وضع علامة تعجب بعد قال", "حذف كلمة المعلم", "وضع شرطة في البداية"], e: "بعد القول وشبهه نضع النقطتين الرأسيتين ( : )[cite: 3]." },
+            { q: "علامة الترقيم بين أقسام الشيء (مثل: الكلمة: اسم ، وفعل ، وحرف) هي:", a: "الفاصلة ( ، )", options: ["الفاصلة ( ، )", "الفاصلة المنقوطة ( ؛ )", "الشرطة ( - )", "القوسان"], e: "توضع الفاصلة بين أقسام الشيء[cite: 3]." },
+            { q: "الجملة الانفعالية التي تعبر عن التمني (ليت الشبابَ يعودُ) تنتهي بـ:", a: "علامة تأثر ( ! )", options: ["علامة تأثر ( ! )", "علامة استفهام ( ؟ )", "نقطة ( . )", "فاصلة منقوطة ( ؛ )"], e: "جمل التمني والتعجب والدعاء هي جمل انفعالية تنتهي بعلامة تأثر[cite: 6]." },
+            { q: "أي الجمل التالية كُتبت بعلامات ترقيم صحيحة تماماً؟", a: "قرأتُ الكتابَ؛ لأنه مفيدٌ جداً.", options: ["قرأتُ الكتابَ؛ لأنه مفيدٌ جداً.", "قرأتُ الكتابَ؟ لأنه مفيدٌ جداً.", "قرأتُ الكتابَ: لأنه مفيدٌ جداً!", "قرأتُ الكتابَ- لأنه مفيدٌ جداً."], e: "العلاقة سببية بين الجملتين فتستحق الفاصلة المنقوطة[cite: 4]." },
+            { q: "تقع الشرطة بعد الأعداد الترتيبية مثل:", a: "1- أو أ-", options: ["1- أو أ-", "1: أو أ:", "1. أو أ.", "(1) أو (أ)"], e: "توضع الشرطة بعد الأعداد الترتيبية أو الحروف الترتيبية[cite: 4]." },
+            { q: "أعراف الكتابة هي عادات التزم بها المؤلفون بهدف:", a: "تنظيم المادة ومساعدة القارئ", options: ["تنظيم المادة ومساعدة القارئ", "استيفاء أوراق الطباعة", "زخرفة الصفحة وتزيينها", "إلغاء علامات الترقيم"], e: "هدف أعراف الكتابة تنظيم المادة ومساعدة القارئ على الفهم[cite: 1]." },
+            { q: "الكتابة في فقرات تعني أنه لا يسمح بالتعبير في الفقرة الواحدة عن أكثر من:", a: "فكرة رئيسة واحدة", options: ["فكرة رئيسة واحدة", "ثلاث أفكار رئيسة", "خمس جمل فقط", "سطرين اثنين"], e: "تعبر كل فقرة عن فكرة رئيسة واحدة وتفصيلاتها[cite: 2]." },
+            { q: "توضع علامة الاستفهام ( ؟ ) بعد الجملة الاستفهامية:", a: "سواء ذكرت أداة الاستفهام أم لم تذكر", options: ["سواء ذكرت أداة الاستفهام أم لم تذكر", "إذا ذكرت أداة الاستفهام فقط", "إذا كانت الجملة تبدأ بـ هل فقط", "في الجمل التعجبية فقط"], e: "توضع بعد الجمل الاستفهامية سواء ذكرت أداة الاستفهام أم لم تذكر (مثل: ستسافر غداً؟)[cite: 5]." },
+            { q: "صح أم خطأ: الفاصلة المنقوطة توضع بعد المنادى.", a: "خطأ، توضع الفاصلة العادية", options: ["خطأ، توضع الفاصلة العادية", "صح، دائماً", "خطأ، توضع النقطة", "صح، إذا كان المنادى طويلاً"], e: "بعد المنادى توضع الفاصلة العادية ( ، )[cite: 3]." },
+            { q: "أي العبارات التالية تدل على استخدام 'علامة التنصيص' بشكل صحيح؟", a: "قال ابن جني: «اللغة أصوات يعبر بها كل قوم عن أغراضهم».", options: ["قال ابن جني: «اللغة أصوات يعبر بها كل قوم عن أغراضهم».", "قال ابن جني: (اللغة أصوات يعبر بها كل قوم عن أغراضهم).", "قال ابن جني: - اللغة أصوات يعبر بها كل قوم عن أغراضهم -", "قال ابن جني: ! اللغة أصوات يعبر بها كل قوم عن أغراضهم !"], e: "النص المنقول حرفياً يحصر بين علامتي التنصيص « »[cite: 5]." },
+            { q: "العنوان الذي يعبر عن التفصيلات الفرعية داخل الموضوع هو:", a: "العنوان الجانبي", options: ["العنوان الجانبي", "العنوان الرئيسي", "الملخص الاختتامي", "الفكرة العابرة"], e: "العناوين الجانبية تعبر عن التفصيلات الرئيسة للموضوع[cite: 1]." },
+            { q: "عندما تزداد التفصيلات والجزئيات في موضوع ما، يُفضل التمييز بينها بـ:", a: "تنويع أساليب التعداد", options: ["تنويع أساليب التعداد", "حذف الترقيم كلياً", "دمج الفقرات في فقرة واحدة", "تكرار العنوان الرئيس"], e: "عند كثرة التفصيلات يحسن التمييز باستخدام نوعين أو أكثر من طرق التعداد[cite: 1]." },
+            { q: "إذا طال الفصل بين طرفي الجملة (مثل المبتدأ والخبر)، نضع بينهما:", a: "شرطة ( - )", options: ["شرطة ( - )", "نقطة ( . )", "علامة حذف ( ... )", "قوسين"], e: "تقع الشرطة قبل الطرف الثاني من الجملة إذا طال فصله عن الأول[cite: 4]." },
+            { q: "تستبدل أسماء الأشخاص في الحوارات البرقية والقصصية بـ:", a: "الشرطة ( - )", options: ["الشرطة ( - )", "النقطتين ( : )", "الفاصلة ( ، )", "علامة التنصيص"], e: "الشرطة تنوب عن تكرار أسماء المتحاورين في الحوار[cite: 4]." },
+            { q: "توضع النقطتان الرأسيتان قبل الأقسام والتفصيلات بعد كلمة مثل:", a: "الكلمة: اسم، وفعل، وحرف.", options: ["الكلمة: اسم، وفعل، وحرف.", "الكلمة، اسم، وفعل، وحرف.", "الكلمة؛ اسم، وفعل، وحرف.", "الكلمة- اسم، وفعل، وحرف."], e: "من مواضع النقطتين الرأسيتين بين الشيء وأقسامه[cite: 3]." },
+            { q: "الموضع الصحيح للنقطة هو:", a: "نهاية الجملة مكتملة المعنى وتنتهي بها الفقرة أيضاً", options: ["نهاية الجملة مكتملة المعنى وتنتهي بها الفقرة أيضاً", "أول السطر ببديل الفراغ", "بين المبتدأ والخبر", "بعد اسم المنادى مباشرة"], e: "تنتهي الفقرة والجملة مكتملة المعنى بنقطة[cite: 2, 3]." },
+            { q: "عند كتابة جملة معترضة تدعو فيها بالرحمة لأحد الوالدين، تستخدم:", a: "الشرطتين - رحمه الله -", options: ["الشرطتين - رحمه الله -", "علامتي التنصيص «رحمه الله»", "علامة الاستفهام ؟رحمه الله؟", "الفاصلة المنقوطة ؛رحمه الله؛"], e: "الجمل المعترضة تحصر بين شرطتين[cite: 5]." },
+            { q: "تسمح الرسوم والجداول التوضيحية للقارئ بـ:", a: "تصور الموضوع واستيعاب جزئياته بلمحة سريعة", options: ["تصور الموضوع واستيعاب جزئياته بلمحة سريعة", "قراءة النص دون الحاجة لتفكير", "إغفال العناوين الجانبية", "تحويل النص إلى شعر"], e: "تعين الجداول والرسوم القارئ على تصور الموضوع بكل تفاصيله[cite: 2]." },
+            { q: "علامة الترقيم المناسبة بعد جملة الذم (بئسَ اللئيمُ) هي:", a: "علامة التأثر ( ! )", options: ["علامة التأثر ( ! )", "الفاصلة المنقوطة ( ؛ )", "علامة الاستفهام ( ؟ )", "النقطتان ( : )"], e: "جمل المدح والذم جمل انفعالية توضع بنهايتها علامة التأثر[cite: 6]." },
+            { q: "أيها الطالب، لا تؤجل عمل اليوم إلى الغد. العلامة المناسبة بعد (أيها الطالب) هي:", a: "فاصلة ( ، )", options: ["فاصلة ( ، )", "نقطة ( . )", "شرطة ( - )", "علامة تنصيص"], e: "بعد لفظ المنادى تقع الفاصلة العادية[cite: 3]." }
+        ];
+
+        let questions = [];
+        let currentQIndex = 0;
+        let score = 0;
+        let canAnswer = true;
+
+        // Audio synth setup using Tone.js
+        const synth = new Tone.Synth().toDestination();
+
+        function playSound(type) {
+            try {
+                if (Tone.context.state !== 'running') {
+                    Tone.start();
+                }
+                if (type === 'correct') {
+                    synth.triggerAttackRelease("G5", "8n");
+                } else if (type === 'wrong') {
+                    synth.triggerAttackRelease("C3", "8n");
+                }
+            } catch(e) { console.log(e); }
+        }
+
+        // Shuffle utility
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            if (tabId === 'cheatsheet') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('cheatsheet').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('quiz').classList.add('active');
+            }
+        }
+
+        function initQuiz() {
+            // Shuffle questions and their internal options
+            questions = rawQuestions.map(q => {
+                const shuffledOpts = shuffleArray(q.options);
+                return {
+                    q: q.q,
+                    a: q.a,
+                    options: shuffledOpts,
+                    e: q.e
+                };
+            });
+            questions = shuffleArray(questions);
+            currentQIndex = 0;
+            score = 0;
+            canAnswer = true;
+
+            document.getElementById('quiz-score').innerText = `النقاط: ${score}`;
+            document.getElementById('results-area').style.display = 'none';
+            document.getElementById('question-text').style.display = 'block';
+            document.getElementById('options-container').style.display = 'grid';
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            canAnswer = true;
+            const qData = questions[currentQIndex];
+            
+            document.getElementById('quiz-progress').innerText = `السؤال ${currentQIndex + 1} من ${questions.length}`;
+            document.getElementById('question-text').innerText = qData.q;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            document.getElementById('explanation-box').style.display = 'none';
+            document.getElementById('btn-next').style.display = 'none';
+
+            qData.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerHTML = `<span>${opt}</span><i class="fa-regular fa-circle"></i>`;
+                btn.onclick = () => selectAnswer(btn, opt, qData.a, qData.e);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectAnswer(selectedBtn, selectedOption, correctAnswer, explanation) {
+            if (!canAnswer) return;
+            canAnswer = false;
+
+            const allBtns = document.querySelectorAll('.option-btn');
+            
+            if (selectedOption === correctAnswer) {
+                selectedBtn.classList.add('correct');
+                selectedBtn.querySelector('i').className = 'fa-solid fa-circle-check';
+                score += 1;
+                document.getElementById('quiz-score').innerText = `النقاط: ${score}`;
+                playSound('correct');
+            } else {
+                selectedBtn.classList.add('incorrect');
+                selectedBtn.querySelector('i').className = 'fa-solid fa-circle-xmark';
+                playSound('wrong');
+
+                // Highlight correct one
+                allBtns.forEach(btn => {
+                    if (btn.innerText.trim() === correctAnswer) {
+                        btn.classList.add('correct');
+                        btn.querySelector('i').className = 'fa-solid fa-circle-check';
+                    }
+                });
+            }
+
+            // Show explanation
+            const expBox = document.getElementById('explanation-box');
+            expBox.innerHTML = `<strong><i class="fa-solid fa-lightbulb"></i> الشرح والتوضيح:</strong> ${explanation}`;
+            expBox.style.display = 'block';
+
+            document.getElementById('btn-next').style.display = 'inline-block';
+        }
+
+        function nextQuestion() {
+            currentQIndex++;
+            if (currentQIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('question-text').style.display = 'none';
+            document.getElementById('options-container').style.display = 'none';
+            document.getElementById('explanation-box').style.display = 'none';
+            document.getElementById('btn-next').style.display = 'none';
+            
+            const resultsArea = document.getElementById('results-area');
+            resultsArea.style.display = 'block';
+
+            document.getElementById('final-score-circle').innerHTML = `${score}/${questions.length}<span>درجتك النهائية</span>`;
+            
+            let message = "";
+            if (score >= 36) {
+                message = "مبدع ورائع جداً! خبير بمهارات الإملاء وأعراف الكتابة 🌟";
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            } else if (score >= 28) {
+                message = "أداء جيد جداً! لديك مستوى مميز في الكفاية الإملائية 👍";
+            } else {
+                message = "محاولة جيدة، ننصحك بمراجعة ملخص القواعد وإعادة الاختبار لتعزيز مهاراتك 📚";
+            }
+            document.getElementById('final-message').innerText = message;
+        }
+
+        function restartQuiz() {
+            initQuiz();
+        }
+
+        // Start quiz on page load
+        window.onload = () => {
+            initQuiz();
+        };
+    </script>
+</body>
+</html>
