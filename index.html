@@ -47,7 +47,7 @@
             background-size: 24px 24px;
         }
 
-        /* Header Fix */
+        /* Header Layout Fix */
         header {
             background: linear-gradient(135deg, var(--primary) 0%, #4A0012 100%);
             color: #FFFFFF;
@@ -329,6 +329,7 @@
             color: var(--primary);
             margin-bottom: 1.5rem;
             box-shadow: inset 0 2px 6px rgba(0,0,0,0.03);
+            line-height: 1.6;
         }
 
         .targets-grid {
@@ -412,7 +413,7 @@
     </header>
 
     <main>
-        <!-- Tab Navigation Fix -->
+        <!-- Navigation Tabs -->
         <div class="nav-tabs">
             <button class="tab-btn active" onclick="switchTab('cheatsheet')">
                 <i class="fa-solid fa-book-bookmark"></i>
@@ -424,11 +425,11 @@
             </button>
             <button class="tab-btn" onclick="switchTab('classify')">
                 <i class="fa-solid fa-layer-group"></i>
-                تحدي الترقيم والتصنيف
+                تحدي الترقيم (30 فقرة)
             </button>
         </div>
 
-        <!-- Cheatsheet Content -->
+        <!-- Cheatsheet Tab -->
         <div id="cheatsheet" class="tab-content active">
             <div class="card">
                 <!-- Section 1: أعراف الكتابة -->
@@ -531,7 +532,7 @@
             </div>
         </div>
 
-        <!-- Quiz Content -->
+        <!-- Quiz Tab -->
         <div id="quiz" class="tab-content">
             <div class="card">
                 <div class="quiz-header">
@@ -554,11 +555,16 @@
             </div>
         </div>
 
-        <!-- Classify Challenge Content -->
+        <!-- Classify Challenge Tab (30 Items) -->
         <div id="classify" class="tab-content">
             <div class="card classify-container">
-                <h3 style="color: var(--primary); margin-bottom: 0.5rem;"><i class="fa-solid fa-bullseye"></i> تحدي تصنيف علامات الترقيم</h3>
-                <p style="color: var(--text-muted); margin-bottom: 1.5rem;">اختر علامة الترقيم المناسبة للسياق أو الجملة المعروضة أمامك:</p>
+                <div class="quiz-header">
+                    <span class="quiz-progress" id="classify-progress">الفقرة 1 من 30</span>
+                    <span class="quiz-score" id="classify-score">النقاط: 0</span>
+                </div>
+
+                <h3 style="color: var(--primary); margin-bottom: 0.5rem;"><i class="fa-solid fa-bullseye"></i> تحدي الترقيم التفاعلي السريع</h3>
+                <p style="color: var(--text-muted); margin-bottom: 1.2rem;">اختر علامة الترقيم الصحيحة للمكان المناسب بين القوسين [  ]:</p>
 
                 <div class="target-card" id="classify-text">جاري تحميل التحدي...</div>
 
@@ -566,7 +572,13 @@
 
                 <div class="explanation-box" id="classify-feedback" style="margin-top: 1.5rem;"></div>
 
-                <button class="btn-action" id="classify-next-btn" style="display: none; margin: 1.5rem auto 0 auto;" onclick="loadClassifyItem()">التالي <i class="fa-solid fa-arrow-left"></i></button>
+                <button class="btn-action" id="classify-next-btn" style="display: none; margin: 1.5rem auto 0 auto;" onclick="nextClassifyItem()">التالي <i class="fa-solid fa-arrow-left"></i></button>
+
+                <div id="classify-results" class="results-box" style="display: none;">
+                    <div class="score-circle" id="classify-final-score">0/30 <span>درجة التحدي</span></div>
+                    <h2 style="color: var(--primary); margin-bottom: 1rem;">انتهى التحدي السريع!</h2>
+                    <button class="btn-action" onclick="restartClassify()">إعادة التحدي <i class="fa-solid fa-rotate-right"></i></button>
+                </div>
             </div>
         </div>
     </main>
@@ -576,7 +588,7 @@
     </footer>
 
     <script>
-        // Clean Question Bank (40 Questions without citations or bracket tags)
+        // Clean Question Bank (40 Questions)
         const rawQuestions = [
             { q: "ما الغرض الرئيس من التزام الكُتّاب بـ 'أعراف الكتابة'؟", a: "تنظيم المادة المكتوبة ومساعدة القارئ على الفهم والتركيز", options: ["تنظيم المادة المكتوبة ومساعدة القارئ على الفهم والتركيز", "تنسيق ألوان الصفحات فقط", "زيادة عدد الأوراق المطبوعة", "تعبئة الفراغات العلوية"], e: "أعراف الكتابة هي عادات تعارف عليها الكتاب لتنظيم النص ومساعدة القارئ على الاستيعاب." },
             { q: "أين يُوضع العنوان الرئيس للموضوع عادةً؟", a: "في وسط السطر الأول من أعلى الصفحة", options: ["في وسط السطر الأول من أعلى الصفحة", "في السطر الأخير أسفل الصفحة", "في الهامش الأيمن للفقرة", "بين شرطتين معترضتين"], e: "العنوان الرئيس للتعبير عن الفكرة الأساسية يوضع بوسط السطر الأول أعلى الصفحة." },
@@ -620,23 +632,49 @@
             { q: "بناء الرسوم والمخططات السهمية يعتبر من عرف:", a: "استخدام الجداول والرسوم التوضيحية", options: ["استخدام الجداول والرسوم التوضيحية", "تحديد الأهداف", "إبراز الكلمات", "التعداد اللفظي"], e: "تساعد الرسوم والمخططات على تلخيص الفكر والجزئيات." }
         ];
 
-        // Classifier Dataset for Mini-game
+        // Expanded Classifier Dataset (30 Items)
         const classifyData = [
-            { text: "حسان بن ثابت شاعر مخضرم [  ] لأنه عاش في الجاهلية والإسلام.", correct: "فاصلة منقوطة ( ؛ )", options: ["فاصلة منقوطة ( ؛ )", "نقطتان ( : )", "علامة تعجب ( ! )", "شرطة ( - )"], exp: "علاقة سببية بين الجملتين تستحق الفاصلة المنقوطة." },
-            { text: "قال الشاعر [  ] «والعلمُ يرفعُ بيتاً لا عمادَ له»", correct: "نقطتان رأسيتان ( : )", options: ["نقطتان رأسيتان ( : )", "فاصلة ( ، )", "علامة استفهام ( ؟ )", "قوسين ( )"], exp: "توضع النقطتان بعد القول وشبهه." },
-            { text: "يا البراء [  ] استمع لنصيحة معلمك.", correct: "فاصلة ( ، )", options: ["فاصلة ( ، )", "نقطة ( . )", "شرطة ( - )", "علامة تنصيص"], exp: "تقع الفاصلة بعد المنادى مباشرة." },
-            { text: "ما أحسنَ الكلمةَ الطيبةَ [  ]", correct: "علامة تأثر ( ! )", options: ["علامة تأثر ( ! )", "علامة استفهام ( ؟ )", "نقطة ( . )", "فاصلة منقوطة ( ؛ )"], exp: "جمل التعجب هي جمل انفعالية تتبعها علامة التأثر." },
-            { text: "أركان الصلاة أربعة عشر ركناً [  ] القيام، وتكبيرة الإحرام...", correct: "نقطتان رأسيتان ( : )", options: ["نقطتان رأسيتان ( : )", "فاصلة منقوطة ( ؛ )", "شرطتان - -", "علامة حظر"], exp: "توضع النقطتان الرأسيتان بين الشيء وأقسامه." },
-            { text: "كان عمر بن الخطاب [  ] رضي الله عنه [  ] عادلاً بين الرعية.", correct: "شرطتان ( - - )", options: ["شرطتان ( - - )", "علامتا تنصيص « »", "قوسان ( )", "نقطتان : :"], exp: "الجملة الدعائية المعترضة توضع بين شرطتين." },
-            { text: "عُرِفت اللغة بأنها [  ] أصواتٌ يعبرُ بها كلُّ قومٍ عن أغراضِهم [  ]", correct: "علامتا تنصيص « »", options: ["علامتا تنصيص « »", "قوسان ( )", "شرطتان - -", "فاصلتان ، ،"], exp: "النص المنقول بحروفه يوضع بين علامتي تنصيص." },
-            { text: "قمت بزيارة عواصم عربية مثل الرياض، والقاهرة، ودمشق [  ]", correct: "علامة حذف ( ... )", options: ["علامة حذف ( ... )", "علامة تعجب ( ! )", "علامة استفهام ( ؟ )", "شرطة ( - )"], exp: "ثلاث نقط مكان الكلام المحذوف للدلالة على البقية." }
+            { text: "حسان بن ثابت شاعر مخضرم [  ] لأنه عاش في الجاهلية والإسلام.", correct: "؛ (فاصلة منقوطة)", options: ["؛ (فاصلة منقوطة)", ": (نقطتان)", "! (علامة تعجب)", "- (شرطة)"], exp: "علاقة سببية بين الجملتين تستحق الفاصلة المنقوطة." },
+            { text: "قال الشاعر [  ] «والعلمُ يرفعُ بيتاً لا عمادَ له»", correct: ": (نقطتان رأسيتان)", options: [": (نقطتان رأسيتان)", "، (فاصلة)", "؟ (استفهام)", "( ) قوسين"], exp: "توضع النقطتان بعد القول وشبهه." },
+            { text: "يا عبدَ الله [  ] اسمع نصيحة معلمك.", correct: "، (فاصلة)", options: ["، (فاصلة)", ". (نقطة)", "- (شرطة)", "« » تنصيص"], exp: "تقع الفاصلة بعد المنادى مباشرة." },
+            { text: "ما أحسنَ الكلمةَ الطيبةَ [  ]", correct: "! (علامة تأثر)", options: ["! (علامة تأثر)", "؟ (علامة استفهام)", ". (نقطة)", "؛ (فاصلة منقوطة)"], exp: "جمل التعجب جمل انفعالية تتبعها علامة التأثر." },
+            { text: "أركان الصلاة أربعة عشر ركناً [  ] القيام، وتكبيرة الإحرام...", correct: ": (نقطتان رأسيتان)", options: [": (نقطتان رأسيتان)", "؛ (فاصلة منقوطة)", "- - شرطتان", "« » تنصيص"], exp: "توضع النقطتان الرأسيتان بين الشيء وأقسامه." },
+            { text: "كان عمر بن الخطاب [  ] رضي الله عنه [  ] عادلاً بين الرعية.", correct: "- - (شرطتان معترضتان)", options: ["- - (شرطتان معترضتان)", "« » (علامتا تنصيص)", "( ) (قوسان)", ": : (نقطتان)"], exp: "الجملة الدعائية المعترضة توضع بين شرطتين." },
+            { text: "عُرِفت اللغة بأنها [  ] أصواتٌ يعبرُ بها كلُّ قومٍ عن أغراضِهم [  ]", correct: "« » (علامتا تنصيص)", options: ["« » (علامتا تنصيص)", "( ) (قوسان)", "- - (شرطتان)", "، ، (فاصلتان)"], exp: "النص المنقول بحروفه يوضع بين علامتي تنصيص." },
+            { text: "قمت بزيارة عواصم عربية مثل الرياض، والقاهرة، ودمشق [  ]", correct: "... (علامة حذف)", options: ["... (علامة حذف)", "! (علامة تعجب)", "؟ (علامة استفهام)", "- (شرطة)"], exp: "ثلاث نقط مكان الكلام المحذوف للدلالة على البقية." },
+            { text: "هل أكملتَ حل جميع الواجبات الإملائية [  ]", correct: "؟ (علامة استفهام)", options: ["؟ (علامة استفهام)", ". (نقطة)", "! (علامة تعجب)", "، (فاصلة)"], exp: "توضع بعد الجملة الاستفهامية." },
+            { text: "الجهلُ أمٌّ لجميعِ الماسي [  ]", correct: ". (نقطة)", options: [". (نقطة)", "، (فاصلة)", "؛ (فاصلة منقوطة)", ": (نقطتان)"], exp: "توضع النقطة عند تمام معنى الجملة." },
+            { text: "الكلمة ثلاثة أقسام [  ] اسم، وفعل، وحرف.", correct: ": (نقطتان رأسيتان)", options: [": (نقطتان رأسيتان)", "، (فاصلة)", "؛ (فاصلة منقوطة)", ". (نقطة)"], exp: "بين الشيء وأقسامه تقع النقطتان." },
+            { text: "ليت الشبابَ يعودُ يوماً [  ]", correct: "! (علامة تأثر)", options: ["! (علامة تأثر)", "؟ (استفهام)", ". (نقطة)", "، (فاصلة)"], exp: "أساليب التمني تعتبر جمل انفعالية تأخذ علامة التأثر." },
+            { text: "استمتعت بقراءة دواوين الشعراء كزهير، والأعشى [  ]", correct: "... (علامة حذف)", options: ["... (علامة حذف)", "! (علامة تعجب)", "؛ (فاصلة منقوطة)", ": (نقطتان)"], exp: "علامة الحذف تدل على وجود أسماء شعراء لم يُذكروا." },
+            { text: "الصبرُ [  ] بفتح الصاد وكسر الباء [  ] عصارةُ نباتٍ مرّ.", correct: "( ) (قوسان تظهير)", options: ["( ) (قوسان تظهير)", "« » (تنصيص)", "- - (شرطتان)", "؛ ؛ (فاصلتان)"], exp: "توضيح ضبط كلمة غامضة يحصر بين قوسين." },
+            { text: "سأل أحمد صديقه [  ] متى ستسافر إلى مكة؟", correct: ": (نقطتان رأسيتان)", options: [": (نقطتان رأسيتان)", "، (فاصلة)", "؛ (فاصلة منقوطة)", "- (شرطة)"], exp: "تقع النقطتان بعد مقول القول وسؤال السؤال." },
+            { q: 16, text: "التقى خالدٌ بصديقه، وقال له: كيف حالك؟\n[  ] بخير والحمد لله.", correct: "- (شرطة حوارية)", options: ["- (شرطة حوارية)", ": (نقطتان)", "« » (تنصيص)", ". (نقطة)"], exp: "تنوب الشرطة عن تكرار اسم الشخص في الحوار." },
+            { text: "حبّذا الكريمُ، وبئسَ اللئيمُ [  ]", correct: "! (علامة تأثر)", options: ["! (علامة تأثر)", "؟ (علامة استفهام)", ". (نقطة)", "، (فاصلة)"], exp: "أساليب المدح والذم جمل انفعالية تأخذ علامة التأثر." },
+            { text: "تُقسم فصول السنة إلى [  ] الربيع، الصيف، الخريف، والشتاء.", correct: ": (نقطتان رأسيتان)", options: [": (نقطتان رأسيتان)", "؛ (فاصلة منقوطة)", "- (شرطة)", ". (نقطة)"], exp: "وقعت النقطتان بين الشيء وتفصيل أقسامه." },
+            { text: "تخرج الطالبُ في الكلية [  ] التخصصات الإنسانية [  ] بدرجة ممتاز.", correct: "( ) (قوسان توضيحيان)", options: ["( ) (قوسان توضيحيان)", "« » (تنصيص)", "! ! (تعجب)", "؛ ؛ (فاصلة)"], exp: "توضيح الغموض والتخصيص يحصر بين القوسين." },
+            { text: "تراجعَ الجهلُ في المجتمع [  ] لانتشارِ المدارس والجامعات.", correct: "؛ (فاصلة منقوطة)", options: ["؛ (فاصلة منقوطة)", "، (فاصلة)", ": (نقطتان)", ". (نقطة)"], exp: "الجملة الثانية سبب وقوع الأولى فتستحق الفاصلة المنقوطة." },
+            { text: "قال علي بن أبي طالب [  ] «العلمُ نهرٌ والموعظةُ بحرٌ»", correct: ": (نقطتان رأسيتان)", options: [": (نقطتان رأسيتان)", "، (فاصلة)", "- (شرطة)", "؛ (فاصلة منقوطة)"], exp: "تقع بعد مقول القول وشبهه." },
+            { text: "أيها الطالبُ البارّ [  ] اسعَ في طاعة والديك.", correct: "، (فاصلة)", options: ["، (فاصلة)", ". (نقطة)", ": (نقطتان)", "؛ (فاصلة منقوطة)"], exp: "توضع الفاصلة بعد جملة المنادى." },
+            { text: "اللهم أغثنا وأنزل علينا الغيثَ [  ]", correct: "! (علامة تأثر)", options: ["! (علامة تأثر)", "؟ (علامة استفهام)", ". (نقطة)", "، (فاصلة)"], exp: "جملة دعاء انفعالية تأخذ علامة التأثر." },
+            { text: "افتتح العصر الجاهلي قبل الإسلام بقرنين [  ] وانتهى بظهور الإسلام.", correct: "، (فاصلة)", options: ["، (فاصلة)", "؛ (فاصلة منقوطة)", ": (نقطتان)", "- (شرطة)"], exp: "تقع الفاصلة بين الجمل المعطوفة والمكملة لبعضها." },
+            { text: "ينص القانون بحسب الفقرة [  ] أ [  ] على حماية حقوق المؤلف.", correct: "( ) (قوسان إشاريان)", options: ["( ) (قوسان إشاريان)", "« » (علامتا تنصيص)", "- - (شرطتان)", "؛ ؛ (فاصلتان)"], exp: "حصر الأرقام أو الحروف في وسط الكلام يكون بين قوسين." },
+            { text: "الأمية في عصر التقدم العلمي والمنافسة المعلوماتية [  ] هي أمية الآلة.", correct: "- (شرطة فصل)", options: ["- (شرطة فصل)", ": (نقطتان)", "، (فاصلة)", "؛ (فاصلة منقوطة)"], exp: "تقع الشرطة بين طرفي الجملة إذا طال الفصل بينهما." },
+            { text: "أفٍّ لهذا الصراع المادي في الحياة [  ]", correct: "! (علامة تأثر)", options: ["! (علامة تأثر)", "؟ (علامة استفهام)", ". (نقطة)", "؛ (فاصلة منقوطة)"], exp: "التذمر والضجر جملة انفعالية تأخذ علامة التأثر." },
+            { text: "1 [  ] أولاً: الوحدة الأولى.", correct: "- (شرطة ترتيبية)", options: ["- (شرطة ترتيبية)", ": (نقطتان)", "، (فاصلة)", "؛ (فاصلة منقوطة)"], exp: "تقع الشرطة بعد الأعداد أو الترتيبات." },
+            { text: "من أركان الإسلام [  ] الصلاة، والزكاة، والحج.", correct: ": (نقطتان رأسيتان)", options: [": (نقطتان رأسيتان)", "؛ (فاصلة منقوطة)", "- (شرطة)", ". (نقطة)"], exp: "وقعت النقطتان لتفصيل الشيء وأقسامه." },
+            { text: "إن العلمَ سلاحُ الأمةِ المتقدمةِ [  ]", correct: ". (نقطة ختامية)", options: [". (نقطة ختامية)", "، (فاصلة)", "؛ (فاصلة منقوطة)", ": (نقطتان)"], exp: "توضع النقطة في ختام الجملة مكتملة المعنى." }
         ];
 
         let questions = [];
         let currentQIndex = 0;
         let score = 0;
         let canAnswer = true;
+
+        let classifyQuestions = [];
         let currentClassifyIndex = 0;
+        let classifyScore = 0;
+        let canClassify = true;
 
         const synth = new Tone.Synth().toDestination();
 
@@ -675,10 +713,11 @@
             } else {
                 document.querySelectorAll('.tab-btn')[2].classList.add('active');
                 document.getElementById('classify').classList.add('active');
-                loadClassifyItem();
+                initClassify();
             }
         }
 
+        /* Quiz Logic */
         function initQuiz() {
             questions = rawQuestions.map(q => ({
                 q: q.q,
@@ -789,12 +828,32 @@
             initQuiz();
         }
 
-        /* Classify Game Functions */
+        /* Classify Game Logic (30 items) */
+        function initClassify() {
+            classifyQuestions = classifyData.map(c => ({
+                text: c.text,
+                correct: c.correct,
+                options: shuffleArray(c.options),
+                exp: c.exp
+            }));
+            classifyQuestions = shuffleArray(classifyQuestions);
+            currentClassifyIndex = 0;
+            classifyScore = 0;
+            canClassify = true;
+
+            document.getElementById('classify-score').innerText = `النقاط: ${classifyScore}`;
+            document.getElementById('classify-results').style.display = 'none';
+            document.getElementById('classify-text').style.display = 'block';
+            document.getElementById('classify-buttons').style.display = 'grid';
+
+            loadClassifyItem();
+        }
+
         function loadClassifyItem() {
-            if (currentClassifyIndex >= classifyData.length) {
-                currentClassifyIndex = 0;
-            }
-            const item = classifyData[currentClassifyIndex];
+            canClassify = true;
+            const item = classifyQuestions[currentClassifyIndex];
+            
+            document.getElementById('classify-progress').innerText = `الفقرة ${currentClassifyIndex + 1} من ${classifyQuestions.length}`;
             document.getElementById('classify-text').innerText = item.text;
             document.getElementById('classify-feedback').style.display = 'none';
             document.getElementById('classify-next-btn').style.display = 'none';
@@ -802,28 +861,58 @@
             const btnsContainer = document.getElementById('classify-buttons');
             btnsContainer.innerHTML = '';
 
-            const shuffledOpts = shuffleArray(item.options);
-            shuffledOpts.forEach(opt => {
+            item.options.forEach(opt => {
                 const btn = document.createElement('button');
                 btn.className = 'target-btn';
                 btn.innerText = opt;
-                btn.onclick = () => checkClassify(opt, item.correct, item.exp);
+                btn.onclick = () => checkClassify(btn, opt, item.correct, item.exp);
                 btnsContainer.appendChild(btn);
             });
         }
 
-        function checkClassify(selected, correct, exp) {
+        function checkClassify(selectedBtn, selected, correct, exp) {
+            if (!canClassify) return;
+            canClassify = false;
+
             const feedback = document.getElementById('classify-feedback');
             if (selected === correct) {
                 playSound('correct');
+                classifyScore += 1;
+                document.getElementById('classify-score').innerText = `النقاط: ${classifyScore}`;
                 feedback.innerHTML = `<span style="color: var(--success); font-weight:800;"><i class="fa-solid fa-circle-check"></i> إجابة صحيحة!</span> ${exp}`;
             } else {
                 playSound('wrong');
-                feedback.innerHTML = `<span style="color: var(--accent-red); font-weight:800;"><i class="fa-solid fa-circle-xmark"></i> إجابة خاطئة! الإجابة الصحيحة هي: (${correct}).</span> ${exp}`;
+                feedback.innerHTML = `<span style="color: var(--accent-red); font-weight:800;"><i class="fa-solid fa-circle-xmark"></i> إجابة خاطئة!</span> الإجابة الصحيحة هي: (${correct}). ${exp}`;
             }
             feedback.style.display = 'block';
             document.getElementById('classify-next-btn').style.display = 'block';
+        }
+
+        function nextClassifyItem() {
             currentClassifyIndex++;
+            if (currentClassifyIndex < classifyQuestions.length) {
+                loadClassifyItem();
+            } else {
+                showClassifyResults();
+            }
+        }
+
+        function showClassifyResults() {
+            document.getElementById('classify-text').style.display = 'none';
+            document.getElementById('classify-buttons').style.display = 'none';
+            document.getElementById('classify-feedback').style.display = 'none';
+            document.getElementById('classify-next-btn').style.display = 'none';
+
+            const resBox = document.getElementById('classify-results');
+            resBox.style.display = 'block';
+            document.getElementById('classify-final-score').innerHTML = `${classifyScore}/${classifyQuestions.length} <span>درجة التحدي</span>`;
+            if (classifyScore >= 25) {
+                confetti({ particleCount: 80, spread: 60, origin: { y: 0.6 } });
+            }
+        }
+
+        function restartClassify() {
+            initClassify();
         }
 
         window.onload = () => {
